@@ -11,20 +11,21 @@ typedef struct {
 typedef struct {
     Position pos;
     int steps; // Αριθμός βημάτων από την αρχική θέση
+    char move; // Κίνηση που πραγματοποιήθηκε (U/D/L/R)
 } QueueNode;
 
 QueueNode queue[MAX_ROOM_DIMENSION * MAX_ROOM_DIMENSION];
 bool visited[MAX_ROOM_DIMENSION][MAX_ROOM_DIMENSION];
-char room[MAX_ROOM_DIMENSION][MAX_ROOM_DIMENSION];
+QueueNode prev[MAX_ROOM_DIMENSION][MAX_ROOM_DIMENSION]; // Πίνακας για να καταγράφεται η προηγούμενη θέση
 int front = -1, rear = -1;
 
 // Έλεγχος εάν η θέση (x, y) είναι εντός των ορίων του δωματίου
 bool isValid(int x, int y, int n) {
-    return (x >= 0 && x < n && y >= 0 && y < n && room[x][y] == '0' && !visited[x][y]);
+    return (x >= 0 && x < n && y >= 0 && y < n && !visited[x][y]);
 }
 
 // Προσθήκη θέσης στην ουρά
-void enqueue(int x, int y, int steps) {
+void enqueue(int x, int y, int steps, char move) {
     if (rear == MAX_ROOM_DIMENSION * MAX_ROOM_DIMENSION - 1) {
         printf("Queue overflow\n");
         exit(1);
@@ -35,6 +36,7 @@ void enqueue(int x, int y, int steps) {
     queue[rear].pos.x = x;
     queue[rear].pos.y = y;
     queue[rear].steps = steps;
+    queue[rear].move = move;
 }
 
 // Αφαίρεση θέσης από την ουρά
@@ -52,9 +54,10 @@ QueueNode dequeue() {
 void findShortestPath(int n, int startX, int startY, int targetX, int targetY) {
     int dx[] = {-1, 1, 0, 0}; // Πιθανές μετακινήσεις σε x
     int dy[] = {0, 0, -1, 1}; // Πιθανές μετακινήσεις σε y
+    char moves[] = {'U', 'D', 'L', 'R'}; // Κίνησεις ανάλογα με τις μετακινήσεις
 
     // Εισάγετε την αρχική θέση στην ουρά
-    enqueue(startX, startY, 0);
+    enqueue(startX, startY, 0, '\0');
     visited[startX][startY] = true;
 
     while (front != -1) {
@@ -66,6 +69,12 @@ void findShortestPath(int n, int startX, int startY, int targetX, int targetY) {
         // Έλεγχος αν έχουμε φτάσει στον στόχο
         if (x == targetX && y == targetY) {
             printf("Shortest path found in %d steps\n", steps);
+            printf("Path: ");
+            while (current.move != '\0') {
+                printf("%c", current.move);
+                current = prev[current.pos.x][current.pos.y]; // Ενημέρωση της τρέχουσας θέσης
+            }
+            printf("\n");
             return;
         }
 
@@ -77,8 +86,9 @@ void findShortestPath(int n, int startX, int startY, int targetX, int targetY) {
             // Έλεγχος εάν η επόμενη θέση είναι έγκυρη
             if (isValid(nextX, nextY, n)) {
                 // Εισάγετε την επόμενη θέση στην ουρά
-                enqueue(nextX, nextY, steps + 1);
+                enqueue(nextX, nextY, steps + 1, moves[i]);
                 visited[nextX][nextY] = true;
+                prev[nextX][nextY] = current; // Καταγραφή της προηγούμενης θέσης
             }
         }
     }
@@ -89,6 +99,7 @@ void findShortestPath(int n, int startX, int startY, int targetX, int targetY) {
 
 int main() {
     int n, startX, startY, targetX, targetY;
+    char room[MAX_ROOM_DIMENSION][MAX_ROOM_DIMENSION]; // Δήλωση του πίνακα room
 
     // Διάβασε τις διαστάσεις του δωματίου
     if (scanf("%d", &n) != 1 || n <= 0 || n > MAX_ROOM_DIMENSION) {
