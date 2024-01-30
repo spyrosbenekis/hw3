@@ -79,6 +79,7 @@ void findShortestPath(int n, int startX, int startY, int targetX, int targetY) {
                 // Εισάγετε την επόμενη θέση στην ουρά
                 enqueue(nextX, nextY, steps + 1);
                 visited[nextX][nextY] = true;
+                printf("%d %d\n",x,y);
             }
         }
     }
