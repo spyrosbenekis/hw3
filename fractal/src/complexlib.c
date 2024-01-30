@@ -1,5 +1,5 @@
 #include <math.h>
-
+#define EPSILON 0.0000001f
 typedef struct {
     double real;
     double imag;
@@ -40,6 +40,10 @@ complex cpower(complex n1, int p) {
 
 double cabsol(complex n) {
     return sqrt(n.real * n.real + n.imag * n.imag);
+}
+
+int ccompare(complex n1, complex n2) {
+    return fabs(n1.real - n2.real) < EPSILON && fabs(n1.imag - n2.imag) < EPSILON;
 }
 
 
