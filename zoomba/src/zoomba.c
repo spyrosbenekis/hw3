@@ -18,6 +18,8 @@ bool visited[MAX_ROOM_DIMENSION][MAX_ROOM_DIMENSION];
 char room[MAX_ROOM_DIMENSION][MAX_ROOM_DIMENSION];
 int front = -1, rear = -1;
 
+char moves[4] = {'L', 'R', 'D', 'U'};
+
 // Έλεγχος εάν η θέση (x, y) είναι εντός των ορίων του δωματίου
 bool isValid(int x, int y, int n) {
     return (x >= 0 && x < n && y >= 0 && y < n && room[x][y] == '0' && !visited[x][y]);
@@ -49,7 +51,7 @@ QueueNode dequeue() {
 }
 
 // Αναζήτηση βέλτιστης διαδρομής με χρήση BFS
-void findShortestPath(int n, int startX, int startY, int targetX, int targetY) {
+int findShortestPath(int n, int startX, int startY, int targetX, int targetY) {
     int dx[] = {-1, 1, 0, 0}; // Πιθανές μετακινήσεις σε x
     int dy[] = {0, 0, -1, 1}; // Πιθανές μετακινήσεις σε y
 
@@ -66,15 +68,15 @@ void findShortestPath(int n, int startX, int startY, int targetX, int targetY) {
         // Έλεγχος αν έχουμε φτάσει στον στόχο
         if (x == targetX && y == targetY) {
             printf("Shortest path found in %d steps\n", steps);
-            return;
+            return steps;
         }
 
         // Εξερεύνηση των τετραγώνων γύρω από την τρέχουσα θέση
         for (int i = 0; i < 4; i++) {
             int nextX = x + dx[i];
             int nextY = y + dy[i];
-
             // Έλεγχος εάν η επόμενη θέση είναι έγκυρη
+            
             if (isValid(nextX, nextY, n)) {
                 // Εισάγετε την επόμενη θέση στην ουρά
                 enqueue(nextX, nextY, steps + 1);
@@ -85,6 +87,7 @@ void findShortestPath(int n, int startX, int startY, int targetX, int targetY) {
 
     // Αν δεν βρέθηκε διαδρομή
     printf("No path found\n");
+    return -1;
 }
 
 int main() {
@@ -118,7 +121,13 @@ int main() {
     }
 
     // Εύρεση της βέλτιστης διαδρομής με χρήση BFS
-    findShortestPath(n, startX, startY, targetX, targetY);
+    int steps;
+    if ((steps=findShortestPath(n, startX, startY, targetX, targetY)) > 0) {
+        for (int i=0; i<steps; i++) {
+            printf("x=%d, y=%d\n", queue[i].pos.x, queue[i].pos.y);
+        }
+    }
+       
 
     return 0;
 }
