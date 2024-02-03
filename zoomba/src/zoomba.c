@@ -50,6 +50,10 @@ QueueNode dequeue() {
     return item;
 }
 
+// Παγκόσμιος πίνακας για τις κινήσεις Zoomba
+char moves[MAX_ROOM_DIMENSION * MAX_ROOM_DIMENSION];
+int counter = 0; // Αρχικόποιηση της μεταβλητής καταμέτρησης κινήσεων
+
 // Αναζήτηση βέλτιστης διαδρομής με χρήση BFS
 int findShortestPath(int n, int startX, int startY, int targetX, int targetY) {
     int dx[] = {-1, 1, 0, 0}; // Πιθανές μετακινήσεις σε x
@@ -68,7 +72,14 @@ int findShortestPath(int n, int startX, int startY, int targetX, int targetY) {
         // Έλεγχος αν έχουμε φτάσει στον στόχο
         if (x == targetX && y == targetY) {
             printf("Shortest path found in %d steps\n", steps);
-            return steps;
+
+            // Εκτύπωση των κινήσεων Zoomba
+            printf("Moves: ");
+            for (int i = 0; i < steps; i++) {
+                printf("%c", moves[i]);
+            }
+            printf("\n");
+            return;
         }
 
         // Εξερεύνηση των τετραγώνων γύρω από την τρέχουσα θέση
@@ -81,6 +92,19 @@ int findShortestPath(int n, int startX, int startY, int targetX, int targetY) {
                 // Εισάγετε την επόμενη θέση στην ουρά
                 enqueue(nextX, nextY, steps + 1);
                 visited[nextX][nextY] = true;
+
+                if(nextY==y){
+                    if(nextX>x)
+                        moves[counter++] = 'R';
+                    else   
+                        moves[counter++] = 'L';
+                } 
+                else{
+                    if(nextY>y)
+                        moves[counter++] = 'D';
+                    else   
+                        moves[counter++] = 'U';
+                }
             }
         }
     }
