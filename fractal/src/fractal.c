@@ -80,7 +80,7 @@ int main(int argc, char * argv[]) {
         return 1;
     }
 
-     int deg; // Polynomial degree
+    int deg; // Polynomial degree
     if (1!=fscanf(file, "%d", &deg)) {
         return 1;
     }
