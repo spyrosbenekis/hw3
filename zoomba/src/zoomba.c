@@ -1,148 +1,80 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
-#define MAX_ROOM_DIMENSION 10000
+#define MAX_ROWS 10
+#define MAX_COLS 10
 
-typedef struct {
-    int x, y; // Θέση (x, y)
-} Position;
+// Δήλωση των συναρτήσεων
+void find_moves(int n, int room[MAX_ROWS][MAX_COLS], int zoomba_x, int zoomba_y, int target_x, int target_y);
 
-typedef struct {
-    Position pos;
-    int steps; // Αριθμός βημάτων από την αρχική θέση
-} QueueNode;
-
-QueueNode queue[MAX_ROOM_DIMENSION * MAX_ROOM_DIMENSION];
-bool visited[MAX_ROOM_DIMENSION][MAX_ROOM_DIMENSION];
-char room[MAX_ROOM_DIMENSION][MAX_ROOM_DIMENSION];
-int front = -1, rear = -1;
-
-// Έλεγχος εάν η θέση (x, y) είναι εντός των ορίων του δωματίου
-bool isValid(int x, int y, int n) {
-    return (x >= 0 && x < n && y >= 0 && y < n && room[x][y] == '0' && !visited[x][y]);
-}
-
-// Προσθήκη θέσης στην ουρά
-void enqueue(int x, int y, int steps) {
-    if (rear == MAX_ROOM_DIMENSION * MAX_ROOM_DIMENSION - 1) {
-        printf("Queue overflow\n");
-        exit(1);
+int main() {
+    int n;
+    if (scanf("%d", &n) != 1) {
+        fprintf(stderr, "Failed to read input for n\n");
+        return 1;
     }
-    if (front == -1)
-        front = 0;
-    rear++;
-    queue[rear].pos.x = x;
-    queue[rear].pos.y = y;
-    queue[rear].steps = steps;
-}
 
-// Αφαίρεση θέσης από την ουρά
-QueueNode dequeue() {
-    if (front == -1 || front > rear) {
-        printf("Queue underflow\n");
-        exit(1);
+    int zoomba_x, zoomba_y, target_x, target_y;
+    if (scanf("%d %d %d %d", &zoomba_x, &zoomba_y, &target_x, &target_y) != 4) {
+        fprintf(stderr, "Failed to read input for zoomba and target positions\n");
+        return 1; // or handle the error appropriately
     }
-    QueueNode item = queue[front];
-    front++;
-    return item;
-}
 
-// Παγκόσμιος πίνακας για τις κινήσεις Zoomba
-char moves[MAX_ROOM_DIMENSION * MAX_ROOM_DIMENSION];
-int counter = 0; // Αρχικόποιηση της μεταβλητής καταμέτρησης κινήσεων
+    int room[MAX_ROWS][MAX_COLS]; // Δημιουργούμε έναν πίνακα για το δωμάτιο
 
-// Αναζήτηση βέλτιστης διαδρομής με χρήση BFS
-void findShortestPath(int n, int startX, int startY, int targetX, int targetY) {
-    int dx[] = {-1, 1, 0, 0}; // Πιθανές μετακινήσεις σε x
-    int dy[] = {0, 0, -1, 1}; // Πιθανές μετακινήσεις σε y
-
-    // Εισάγετε την αρχική θέση στην ουρά
-    enqueue(startX, startY, 0);
-    visited[startX][startY] = true;
-
-    while (front != -1) {
-        QueueNode current = dequeue();
-        int x = current.pos.x;
-        int y = current.pos.y;
-        int steps = current.steps;
-
-        // Έλεγχος αν έχουμε φτάσει στον στόχο
-        if (x == targetX && y == targetY) {
-            printf("Shortest path found in %d steps\n", steps);
-
-            // Εκτύπωση των κινήσεων Zoomba
-            printf("Moves: ");
-            for (int i = 0; i < steps; i++) {
-                printf("%c", moves[i]);
+    // Διαβάζουμε τα δεδομένα του δωματίου
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (scanf("%1d", &room[i][j]) != 1) {
+                fprintf(stderr, "Failed to read input for room[%d][%d]\n", i, j);
+                return 1; // or handle the error appropriately
             }
-            printf("\n");
-            return;
         }
+    }
 
-        // Εξερεύνηση των τετραγώνων γύρω από την τρέχουσα θέση
+    // Καλούμε τη συνάρτηση για την εύρεση των κινήσεων
+    find_moves(n, room, zoomba_x, zoomba_y, target_x, target_y);
+
+    return 0;
+}
+
+// Υλοποίηση της συνάρτησης
+void find_moves(int n, int room[MAX_ROWS][MAX_COLS], int zoomba_x, int zoomba_y, int target_x, int target_y) {
+    // Προσδιορίζουμε τις κατευθύνσεις που μπορεί να κινηθεί η zoomba
+    int dx[] = {-1, 1, 0, 0}; // Αριστερά, δεξιά, πάνω, κάτω
+    int dy[] = {0, 0, -1, 1};
+
+    // Πίνακας για να αποθηκεύσουμε τις κινήσεις
+    char *moves[] = {"U", "D", "L", "R"};
+
+    // Επιλέγουμε την καλύτερη κίνηση που μπορεί να κάνει η zoomba μέχρι να φτάσει στον στόχο
+    while (zoomba_x != target_x || zoomba_y != target_y) {
+        int best_move = -1;
+        int min_distance = n * n; // Αρχικοποιούμε την ελάχιστη απόσταση με το μέγιστο δυνατό αριθμό
+
         for (int i = 0; i < 4; i++) {
-            int nextX = x + dx[i];
-            int nextY = y + dy[i];
+            int nx = zoomba_x + dx[i];
+            int ny = zoomba_y + dy[i];
 
-            // Έλεγχος εάν η επόμενη θέση είναι έγκυρη
-            if (isValid(nextX, nextY, n)) {
-                // Εισάγετε την επόμενη θέση στην ουρά
-                enqueue(nextX, nextY, steps + 1);
-                visited[nextX][nextY] = true;
+            // Ελέγχουμε αν η κίνηση είναι εντός των ορίων του δωματίου και αν δεν είναι τοίχος
+            if (nx >= 0 && nx < n && ny >= 0 && ny < n && room[nx][ny] == 0) {
+                // Υπολογίζουμε την απόσταση από τον στόχο
+                int distance = abs(nx - target_x) + abs(ny - target_y);
 
-                if(nextY==y){
-                    if(nextX>x)
-                        moves[counter++] = 'R';
-                    else   
-                        moves[counter++] = 'L';
-                } 
-                else{
-                    if(nextY>y)
-                        moves[counter++] = 'D';
-                    else   
-                        moves[counter++] = 'U';
+                // Αν η νέα απόσταση είναι μικρότερη από την τρέχουσα ελάχιστη, ενημερώνουμε την κίνηση και την ελάχιστη απόσταση
+                if (distance < min_distance) {
+                    min_distance = distance;
+                    best_move = i;
                 }
             }
         }
-    }
 
-    // Αν δεν βρέθηκε διαδρομή
-    printf("No path found\n");
-}
-
-int main() {
-    int n, startX, startY, targetX, targetY;
-
-    // Διάβασε τις διαστάσεις του δωματίου
-    if (scanf("%d", &n) != 1 || n <= 0 || n > MAX_ROOM_DIMENSION) {
-        fprintf(stderr, "Invalid room dimension input.\n");
-        return 1;
-    }
-
-    // Διάβασε τις αρχικές θέσεις Zoomba και τον στόχο
-    if (scanf("%d %d %d %d", &startX, &startY, &targetX, &targetY) != 4) {
-        fprintf(stderr, "Invalid Zoomba position or target input.\n");
-        return 1;
-    }
-
-    // Διάβασε τον χάρτη του δωματίου
-    for (int i = 0; i < n; i++) {
-        if (scanf("%s", room[i]) != 1) {
-            fprintf(stderr, "Invalid room layout input.\n");
-            return 1;
+        // Κάνουμε την καλύτερη δυνατή κίνηση
+        if (best_move != -1) {
+            zoomba_x += dx[best_move];
+            zoomba_y += dy[best_move];
+            printf("%s", moves[best_move]);
         }
     }
-
-    // Καθαρισμός του πίνακα επισκεψιμότητας
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            visited[i][j] = false;
-        }
-    }
-
-    // Εύρεση της βέλτιστης διαδρομής με χρήση BFS
-    findShortestPath(n, startX, startY, targetX, targetY);
-
-    return 0;
+    printf("\n");
 }
