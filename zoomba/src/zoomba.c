@@ -5,16 +5,19 @@
 #define MAX_ROWS 10
 #define MAX_COLS 10
 
+// Structure to represent a node in the search
 typedef struct Node {
-    int x, y;
-    int g, h;
-    struct Node* parent;
+    int x, y;           // Coordinates of the node
+    int g, h;           // Cost and heuristic values
+    struct Node* parent; // Pointer to the parent node
 } Node;
 
+// Heuristic function (Manhattan distance)
 int heuristic(int x1, int y1, int x2, int y2) {
     return abs(x1 - x2) + abs(y1 - y2);
 }
 
+// Function to create a new node
 Node* create_node(int x, int y, int g, int h, Node* parent) {
     Node* node = (Node*)malloc(sizeof(Node));
     if (node == NULL) {
@@ -29,10 +32,12 @@ Node* create_node(int x, int y, int g, int h, Node* parent) {
     return node;
 }
 
+// Function to free memory allocated for a node
 void destroy_node(Node* node) {
     free(node);
 }
 
+// Function to find the node with the minimum f value in the open set
 Node* find_min_f(Node** open_set, int open_set_size) {
     Node* min_node = open_set[0];
     for (int i = 1; i < open_set_size; ++i) {
@@ -43,6 +48,7 @@ Node* find_min_f(Node** open_set, int open_set_size) {
     return min_node;
 }
 
+// Function to reconstruct the path from the goal node to the start node
 char* reconstruct_path(Node* current) {
     char* moves = (char*)malloc(sizeof(char) * (current->g + 1));
     if (moves == NULL) {
@@ -69,25 +75,26 @@ char* reconstruct_path(Node* current) {
     return moves;
 }
 
+// Function to find possible moves for Zoomba
 void find_moves(int n, int room[MAX_ROWS][MAX_COLS], int zoomba_x, int zoomba_y, int target_x, int target_y) {
-    int dx[] = {-1, 1, 0, 0};
-    int dy[] = {0, 0, -1, 1};
+    int dx[] = {-1, 1, 0, 0}; // Possible changes in x direction
+    int dy[] = {0, 0, -1, 1}; // Possible changes in y direction
 
     Node* start = create_node(zoomba_x, zoomba_y, 0, heuristic(zoomba_x, zoomba_y, target_x, target_y), NULL);
     Node* goal = create_node(target_x, target_y, 0, 0, NULL);
 
-    Node* open_set[MAX_ROWS * MAX_COLS];
+    Node* open_set[MAX_ROWS * MAX_COLS]; // Open set of nodes to be evaluated
     int open_set_size = 0;
 
-    bool closed_set[MAX_ROWS][MAX_COLS] = {false};
+    bool closed_set[MAX_ROWS][MAX_COLS] = {false}; // Closed set of evaluated nodes
 
-    open_set[open_set_size++] = start;
+    open_set[open_set_size++] = start; // Add start node to open set
 
     while (open_set_size > 0) {
-        Node* current = find_min_f(open_set, open_set_size);
-        if (current->x == goal->x && current->y == goal->y) {
-            char* moves = reconstruct_path(current);
-            printf("%s\n", moves);
+        Node* current = find_min_f(open_set, open_set_size); // Find node with minimum f value
+        if (current->x == goal->x && current->y == goal->y) { // If goal is reached
+            char* moves = reconstruct_path(current); // Reconstruct path
+            printf("%s\n", moves); // Print moves
             free(moves);
 
             destroy_node(start);
@@ -98,6 +105,7 @@ void find_moves(int n, int room[MAX_ROWS][MAX_COLS], int zoomba_x, int zoomba_y,
             return;
         }
 
+        // Generate successors and add them to open set
         for (int i = 0; i < 4; ++i) {
             int nx = current->x + dx[i];
             int ny = current->y + dy[i];
@@ -109,6 +117,7 @@ void find_moves(int n, int room[MAX_ROWS][MAX_COLS], int zoomba_x, int zoomba_y,
             }
         }
 
+        // Remove current node from open set
         for (int i = 0; i < open_set_size; ++i) {
             if (open_set[i] == current) {
                 open_set[i] = open_set[open_set_size - 1];
@@ -116,10 +125,10 @@ void find_moves(int n, int room[MAX_ROWS][MAX_COLS], int zoomba_x, int zoomba_y,
                 break;
             }
         }
-        closed_set[current->x][current->y] = true;
+        closed_set[current->x][current->y] = true; // Mark current node as evaluated
     }
 
-    printf("impossible\n");
+    printf("impossible\n"); // If goal is not reachable
     destroy_node(start);
     destroy_node(goal);
     for (int i = 0; i < open_set_size; ++i) {
@@ -127,6 +136,7 @@ void find_moves(int n, int room[MAX_ROWS][MAX_COLS], int zoomba_x, int zoomba_y,
     }
 }
 
+// Main function
 int main() {
     int n;
     if (scanf("%d", &n) != 1) {
