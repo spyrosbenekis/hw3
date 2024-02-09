@@ -7,6 +7,7 @@
 #define HEADER 54
 #define RGB 3
 #define MAX_ROOTS 10
+#define MIN_DIFF 1e-6
 
 void cprint(complex n) {
     if (n.imag >= 0) {
@@ -154,16 +155,17 @@ int main(int argc, char * argv[]) {
                 // Compute the next possible solution of our polynomial based on the Newton-Raphson method
                 zn_1 = csub(zn, cdiv(fzn, fdzn));
                 loops++;
-            } while (cabsol(csub(zn_1, zn)) >= 1e-6 && loops <= 1000);
+            } while (cabsol(csub(zn_1, zn)) >= MIN_DIFF && loops <= 1000);
 
             if (loops > 1000) {
                 printf("incomplete ");
-                loops_arr[counter] = 1e-6;
+                loops_arr[counter] = MIN_DIFF;
             } else if (loops < 0) {
                 printf("nan ");
-                loops_arr[counter] = 1e-6;
+                loops_arr[counter] = MIN_DIFF;
             } else {
                 cprint(zn_1);
+                // printf("%d ", loops);
                 loops_arr[counter] = loops;
                 add_if_new(zn_1, sep_solutions, &found);
                 all_solutions[counter] = zn_1;
@@ -177,6 +179,8 @@ int main(int argc, char * argv[]) {
         min_real += step;
     }
 
+
+    // Επέκταση της εργασίας για να παράγει τα Newton fractals σε μία εικόνα bmp
 
     // Create the bmp file
     if (bmp_filename) {
@@ -208,15 +212,15 @@ int main(int argc, char * argv[]) {
 
         // define colors for each separate solution (up to 10)
         int colors[MAX_ROOTS][RGB] = {{0, 0, 255}, {0, 255, 0}, {0, 255, 255}, {255, 0, 0}, {255, 255, 0}, {255, 0, 255}, {64, 0, 128}, {0, 128, 64}, {128, 64, 0}, {0, 0, 0}};
-
+        int val;
         for (int h=0; h<height; h++) {
             for (int w=0; w<width; w++) {
                 // This generates image based on separate solutions and iterations taken to reach each solution
                 for (int r=0; r<RGB; r++) {
-                    fputc(85*log10(loops_arr[width*h+w])*colors[index_of(all_solutions[width*h+w], sep_solutions, deg)][r], bmp_file);
-                } // 85 comes from 255/3. 255 is the largest r, g or b value of a color and 3 is the max of log10(loops_arr[i]) since loops <= 1000
+                    val = (log10(loops_arr[width*h+w])-0.3)*colors[index_of(all_solutions[width*h+w], sep_solutions, deg)][r];
+                    fputc((val>255)?255:val, bmp_file);
+                } 
             }
-
             // Place padding bytes inbetween pixels
             for (int p=0; p<padding; p++) {
                 fputc(0, bmp_file);
