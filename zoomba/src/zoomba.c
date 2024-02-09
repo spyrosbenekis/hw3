@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define MAX_ROWS 10
-#define MAX_COLS 10
+#define MAX_ROWS 10000
+#define MAX_COLS 10000
 
 // Structure to represent a node in the search
 typedef struct Node {
@@ -76,17 +76,35 @@ char* reconstruct_path(Node* current) {
 }
 
 // Function to find possible moves for Zoomba
-void find_moves(int n, int room[MAX_ROWS][MAX_COLS], int zoomba_x, int zoomba_y, int target_x, int target_y) {
+void find_moves(int n, int** room, int zoomba_x, int zoomba_y, int target_x, int target_y) {
     int dx[] = {-1, 1, 0, 0}; // Possible changes in x direction
     int dy[] = {0, 0, -1, 1}; // Possible changes in y direction
 
     Node* start = create_node(zoomba_x, zoomba_y, 0, heuristic(zoomba_x, zoomba_y, target_x, target_y), NULL);
     Node* goal = create_node(target_x, target_y, 0, 0, NULL);
 
-    Node* open_set[MAX_ROWS * MAX_COLS]; // Open set of nodes to be evaluated
+    Node** open_set = (Node**)malloc(MAX_ROWS * MAX_COLS * sizeof(Node*)); // Open set of nodes to be evaluated
+    if (open_set == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(1);
+    }
     int open_set_size = 0;
 
-    bool closed_set[MAX_ROWS][MAX_COLS] = {false}; // Closed set of evaluated nodes
+    bool **closed_set = (bool **)malloc(n * sizeof(bool *));
+    if (closed_set == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(1);
+    }
+    for (int i = 0; i < n; ++i) {
+        closed_set[i] = (bool *)malloc(n * sizeof(bool));
+        if (closed_set[i] == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(1);
+        }
+        for (int j = 0; j < n; ++j) {
+            closed_set[i][j] = false;
+        }
+    }
 
     open_set[open_set_size++] = start; // Add start node to open set
 
@@ -96,12 +114,16 @@ void find_moves(int n, int room[MAX_ROWS][MAX_COLS], int zoomba_x, int zoomba_y,
             char* moves = reconstruct_path(current); // Reconstruct path
             printf("%s\n", moves); // Print moves
             free(moves);
-
             destroy_node(start);
             destroy_node(goal);
             for (int i = 0; i < open_set_size; ++i) {
                 destroy_node(open_set[i]);
             }
+            for (int i = 0; i < n; ++i) {
+                free(closed_set[i]);
+            }
+            free(closed_set);
+            free(open_set);
             return;
         }
 
@@ -134,6 +156,11 @@ void find_moves(int n, int room[MAX_ROWS][MAX_COLS], int zoomba_x, int zoomba_y,
     for (int i = 0; i < open_set_size; ++i) {
         destroy_node(open_set[i]);
     }
+    for (int i = 0; i < n; ++i) {
+        free(closed_set[i]);
+    }
+    free(closed_set);
+    free(open_set);
 }
 
 // Main function
@@ -150,8 +177,21 @@ int main() {
         return 1;
     }
 
-    int room[MAX_ROWS][MAX_COLS];
+    // Δυναμική δέσμευση μνήμης για τον πίνακα room
+    int **room = (int **)malloc(n * sizeof(int *));
+    if (room == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        return 1;
+    }
+    for (int i = 0; i < n; ++i) {
+        room[i] = (int *)malloc(n * sizeof(int));
+        if (room[i] == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            return 1;
+        }
+    }
 
+    // Διάβασμα τιμών για τον πίνακα room
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             if (scanf("%1d", &room[i][j]) != 1) {
@@ -162,6 +202,12 @@ int main() {
     }
 
     find_moves(n, room, zoomba_x, zoomba_y, target_x, target_y);
+
+    // Αποδέσμευση μνήμης για τον πίνακα room
+    for (int i = 0; i < n; ++i) {
+        free(room[i]);
+    }
+    free(room);
 
     return 0;
 }
