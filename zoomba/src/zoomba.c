@@ -150,7 +150,7 @@ void find_moves(int n, int** room, int zoomba_x, int zoomba_y, int target_x, int
         closed_set[current->x][current->y] = true; // Mark current node as evaluated
     }
 
-    printf("impossible\n"); // If goal is not reachable
+    printf("0\n"); // If goal is not reachable
     destroy_node(start);
     destroy_node(goal);
     for (int i = 0; i < open_set_size; ++i) {
