@@ -128,7 +128,10 @@ int main(){
     }   
     
     int zoomba_x, zoomba_y, target_x, target_y;
-    scanf("%d %d %d %d", &zoomba_x, &zoomba_y, &target_x, &target_y);
+    if (scanf("%d %d %d %d", &zoomba_x, &zoomba_y, &target_x, &target_y) != 4) {
+        fprintf(stderr, "Failed to read input for zoomba and target positions\n");
+        return 1;
+    }
 
     if(zoomba_x < 0 || zoomba_x >= n || zoomba_y < 0 || zoomba_y >= n ||
        target_x < 0 || target_x >= n || target_y < 0 || target_y >= n){
@@ -157,7 +160,6 @@ int main(){
         fprintf(stderr, "Wrong values for zoomba or target");
     }   
 
-    
     find_moves(n, room, zoomba_x, zoomba_y, target_x, target_y);
 
     return 0;
