@@ -28,11 +28,11 @@ node* create_node(int x, int y, int g, int h, node* parent) {
 }
 
 // Συνάρτηση για την εύρεση του κόμβου με τη μικρότερη τιμή f στο σύνολο ανοιχτών κόμβων
-node* find_min_f(node** test, int test_size) {
-    node* min_node = test[0];
+node* find_min_f(node** open_set, int test_size) {
+    node* min_node = open_set[0];
     for(int i = 1; i < test_size; ++i) {
-        if ((test[i]->g + test[i]->h) < (min_node->g + min_node->h)) {
-            min_node = test[i];
+        if ((open_set[i]->g + open_set[i]->h) < (min_node->g + min_node->h)) {
+            min_node = open_set[i];
         }
     }
     return min_node;
@@ -70,21 +70,21 @@ void find_moves(int n, int** room, int zoomba_x, int zoomba_y, int target_x, int
     node* start = create_node(zoomba_x, zoomba_y, 0, heuristic(zoomba_x, zoomba_y, target_x, target_y), NULL);
     node* goal = create_node(target_x, target_y, 0, 0, NULL);
 
-    node** test = (node**)malloc(n * n * sizeof(node*)); // Σύνολο ανοιχτών κόμβων προς εξέταση
+    node** open_set = (node**)malloc(n * n * sizeof(node*)); // Σύνολο ανοιχτών κόμβων προς εξέταση
     
     int test_size = 0;
 
-    bool **tested = (bool **)malloc(n * sizeof(bool *));
+    bool **closed_set = (bool **)malloc(n * sizeof(bool *));
     
     for(int i = 0; i < n; ++i) {
-        tested[i] = (bool *)calloc(n, sizeof(bool));
+        closed_set[i] = (bool *)calloc(n, sizeof(bool));
     }
 
-    test[test_size++] = start; // Προσθήκη του αρχικού κόμβου στο σύνολο ανοιχτών κόμβων
+    open_set[test_size++] = start; // Προσθήκη του αρχικού κόμβου στο σύνολο ανοιχτών κόμβων
 
     while(test_size > 0) {
 
-        node* current = find_min_f(test, test_size); // Εύρεση κόμβου με ελάχιστη τιμή f
+        node* current = find_min_f(open_set, test_size); // Εύρεση κόμβου με ελάχιστη τιμή f
 
         if (current->x == goal->x && current->y == goal->y) { // Εάν έχει επιτευχθεί ο στόχος
             char* moves = path(current); // Ανακατασκευή μονοπατιού
@@ -97,22 +97,22 @@ void find_moves(int n, int** room, int zoomba_x, int zoomba_y, int target_x, int
                 int nx = current->x + dx[i];
                 int ny = current->y + dy[i];
 
-                if(nx >= 0 && nx < n && ny >= 0 && ny < n && room[nx][ny] == 0 && !tested[nx][ny]) {
+                if(nx >= 0 && nx < n && ny >= 0 && ny < n && room[nx][ny] == 0 && !closed_set[nx][ny]) {
                     node* successor = create_node(nx, ny, current->g + 1, heuristic(nx, ny, target_x, target_y), current);
-                    test[test_size++] = successor;
-                    tested[nx][ny] = 1;
+                    open_set[test_size++] = successor;
+                    closed_set[nx][ny] = 1;
                 }
             }
 
             // Αφαίρεση του τρέχοντος κόμβου από το σύνολο ανοιχτών κόμβων
             for(int i = 0; i < test_size; ++i) {
-                if (test[i] == current) {
-                    test[i] = test[test_size - 1];
+                if (open_set[i] == current) {
+                    open_set[i] = open_set[test_size - 1];
                     test_size--;
                     break;
                 }
             }
-            tested[current->x][current->y] = 1; // Σήμανση του τρέχοντος κόμβου ως αξιολογημένο
+            closed_set[current->x][current->y] = 1; // Σήμανση του τρέχοντος κόμβου ως αξιολογημένο
     }
 
     printf("0\n"); // Εάν ο στόχος δεν είναι προσβάσιμος
