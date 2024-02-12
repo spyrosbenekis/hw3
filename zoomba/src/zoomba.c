@@ -47,15 +47,15 @@ char* path(node* current){
     moves[cur] = '\0';
 
     while(current->parent != NULL) {
-        if(current->parent->x == current->x + 1) {
+        if(current->parent->x == current->x + 1)
             moves[--cur] = 'U'; // Πάνω
-        } else if(current->parent->x == current->x - 1) {
+        else if(current->parent->x == current->x - 1)
             moves[--cur] = 'D'; // Κάτω
-        } else if(current->parent->y == current->y + 1) {
+        else if(current->parent->y == current->y + 1)
             moves[--cur] = 'L'; // Αριστερά
-        } else if(current->parent->y == current->y - 1) {
+        else if(current->parent->y == current->y - 1)
             moves[--cur] = 'R'; // Δεξιά
-        }
+
         current = current->parent;
     }
 
