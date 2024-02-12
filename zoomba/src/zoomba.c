@@ -122,13 +122,13 @@ void find_moves(int n, int** room, int zoomba_x, int zoomba_y, int target_x, int
 int main(){
 
     int n;
-    if (scanf("%d", &n) != 1) {
+    if(scanf("%d", &n) != 1){
         fprintf(stderr, "Failed to read input for n\n");
         return 1;
     }   
     
     int zoomba_x, zoomba_y, target_x, target_y;
-    if (scanf("%d %d %d %d", &zoomba_x, &zoomba_y, &target_x, &target_y) != 4) {
+    if(scanf("%d %d %d %d", &zoomba_x, &zoomba_y, &target_x, &target_y) != 4){
         fprintf(stderr, "Failed to read input for zoomba and target positions\n");
         return 1;
     }
@@ -138,6 +138,7 @@ int main(){
         fprintf(stderr, "Wrong values for zoomba or target");
         return 1;
     }
+
 
     // Δέσμευση μνήμης για τον πίνακα room
     int **room = (int **)malloc(n * sizeof(int *));
@@ -156,9 +157,10 @@ int main(){
         }
     }
 
-    if((*room[zoomba_x] + *room[zoomba_y] + *room[target_x] + *room[target_y]) != 0){
+    if(room[zoomba_x][zoomba_y] != 0 || room[target_x][target_y] != 0){
         fprintf(stderr, "Wrong values for zoomba or target");
-    }   
+        return 1;
+    }
 
     find_moves(n, room, zoomba_x, zoomba_y, target_x, target_y);
 
