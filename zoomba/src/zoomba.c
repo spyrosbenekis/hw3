@@ -10,7 +10,7 @@ typedef struct node{
 } node;
 
 //Απόσταση Manhattan
-int heuristic(int x1, int y1, int x2, int y2){
+int manhattan(int x1, int y1, int x2, int y2){
     return abs(x1 - x2) + abs(y1 - y2);
 }
 
@@ -46,7 +46,7 @@ char* path(node* current){
     int cur = current->g;
     moves[cur] = '\0';
 
-    while(current->parent != NULL) {
+    while(current->parent != NULL){
         if(current->parent->x == current->x + 1)
             moves[--cur] = 'U'; // Πάνω
         else if(current->parent->x == current->x - 1)
@@ -55,7 +55,6 @@ char* path(node* current){
             moves[--cur] = 'L'; // Αριστερά
         else if(current->parent->y == current->y - 1)
             moves[--cur] = 'R'; // Δεξιά
-
         current = current->parent;
     }
 
@@ -67,7 +66,7 @@ void find_moves(int n, int** room, int zoomba_x, int zoomba_y, int target_x, int
     int dx[] = {-1, 1, 0, 0}; // Πιθανές αλλαγές στον άξονα x
     int dy[] = {0, 0, -1, 1}; // Πιθανές αλλαγές στον άξονα y
 
-    node* start = create_node(zoomba_x, zoomba_y, 0, heuristic(zoomba_x, zoomba_y, target_x, target_y), NULL);
+    node* start = create_node(zoomba_x, zoomba_y, 0, manhattan(zoomba_x, zoomba_y, target_x, target_y), NULL);
     node* goal = create_node(target_x, target_y, 0, 0, NULL);
 
     node** open_set = (node**)malloc(n * n * sizeof(node*)); // Σύνολο ανοιχτών κόμβων προς εξέταση
@@ -86,33 +85,33 @@ void find_moves(int n, int** room, int zoomba_x, int zoomba_y, int target_x, int
 
         node* current = find_min_f(open_set, test_size); // Εύρεση κόμβου με ελάχιστη τιμή f
 
-        if(current->x == goal->x && current->y == goal->y){ // Εάν έχει επιτευχθεί ο στόχος
+        if (current->x == goal->x && current->y == goal->y){ // Εάν έχει επιτευχθεί ο στόχος
             char* moves = path(current); // Ανακατασκευή μονοπατιού
             printf("%s\n", moves); // Εκτύπωση κινήσεων
             return;
         }
 
-            // Δημιουργία διαδόχων κόμβων και προσθήκη τους στο σύνολο ανοιχτών κόμβων
-            for(int i = 0; i < 4; ++i){
-                int nx = current->x + dx[i];
-                int ny = current->y + dy[i];
+        // Δημιουργία διαδόχων κόμβων και προσθήκη τους στο σύνολο ανοιχτών κόμβων
+        for(int i = 0; i < 4; ++i){
+            int nx = current->x + dx[i];
+            int ny = current->y + dy[i];
 
-                if(nx >= 0 && nx < n && ny >= 0 && ny < n && room[nx][ny] == 0 && !closed_set[nx][ny]) {
-                    node* successor = create_node(nx, ny, current->g + 1, heuristic(nx, ny, target_x, target_y), current);
-                    open_set[test_size++] = successor;
-                    closed_set[nx][ny] = 1;
-                }
+            if(nx >= 0 && nx < n && ny >= 0 && ny < n && room[nx][ny] == 0 && !closed_set[nx][ny]){
+                node* successor = create_node(nx, ny, current->g + 1, manhattan(nx, ny, target_x, target_y), current);
+                open_set[test_size++] = successor;
+                closed_set[nx][ny] = 1;
             }
+        }
 
-            // Αφαίρεση του τρέχοντος κόμβου από το σύνολο ανοιχτών κόμβων
-            for(int i = 0; i < test_size; ++i){
-                if (open_set[i] == current) {
-                    open_set[i] = open_set[test_size - 1];
-                    test_size--;
-                    break;
-                }
+        // Αφαίρεση του τρέχοντος κόμβου από το σύνολο ανοιχτών κόμβων
+        for(int i = 0; i < test_size; ++i){
+            if (open_set[i] == current){
+                open_set[i] = open_set[test_size - 1];
+                test_size--;
+                break;
             }
-            closed_set[current->x][current->y] = 1; // Σήμανση του τρέχοντος κόμβου ως αξιολογημένο
+        }
+        closed_set[current->x][current->y] = 1; // Σήμανση του τρέχοντος κόμβου ως αξιολογημένο
     }
 
     printf("0\n"); // Εάν ο στόχος δεν είναι προσβάσιμος
@@ -140,14 +139,14 @@ int main(){
     // Δέσμευση μνήμης για τον πίνακα room
     int **room = (int **)malloc(n * sizeof(int *));
     
-    for(int i = 0; i < n; ++i) {
+    for(int i = 0; i < n; ++i){
         room[i] = (int *)malloc(n * sizeof(int));
     }
 
     // Ανάγνωση τιμών για τον πίνακα room
     for(int i = 0; i < n; i++){
-        for(int j = 0; j < n; j++) {
-            if (scanf("%1d", &room[i][j]) != 1) {
+        for(int j = 0; j < n; j++){
+            if (scanf("%1d", &room[i][j]) != 1){
                 return 1;
             }
         }
